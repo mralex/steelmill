@@ -187,6 +187,11 @@ int main(int, char**)
 
             ImGui::Separator();
 
+            ImGui::SliderFloat("Sample Length", &tension, 0.f, 20.f, "%.3f", 0);
+            ImGui::SliderFloat("Attenuation Limit", &tension, 0.f, 60.f, "-%.3f", 0);
+
+            ImGui::Separator();
+
             ImGui::Button("Render");
             ImGui::SameLine();
             ImGui::Button("Play");
