@@ -16,7 +16,7 @@
 
 EXE = steelmill
 IMGUI_DIR = libs/imgui
-SOURCES = src/main.cpp
+SOURCES = src/main.cpp src/psphymod/psmetalobj.cpp src/dsp.cpp
 SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
 SOURCES += $(IMGUI_DIR)/backends/imgui_impl_sdl.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
 OBJS = $(addsuffix .o, $(basename $(SOURCES)))

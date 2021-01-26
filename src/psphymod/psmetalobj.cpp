@@ -22,9 +22,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// #include "simd/vector.hpp"
-// using rack::simd::float_4;
-
 #include "psmetalobj.h"
 
 /* Crappy azz M$ software doesn't define this. */

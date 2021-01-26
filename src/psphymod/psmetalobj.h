@@ -21,11 +21,8 @@
 #ifndef __PS_METAL_OBJ_H_
 #define __PS_METAL_OBJ_H_
 
-#include "rack.hpp"
 #include "vector3.hpp"
 #include <cmath>
-
-using namespace rack;
 
 #ifdef __cplusplus
 extern "C" {

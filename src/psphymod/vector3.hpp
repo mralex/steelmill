@@ -1,50 +1,35 @@
 #pragma once
 
-#include "simd/vector.hpp"
-using rack::simd::float_4;
-
 struct Vector3 {
-    float_4 vec;
+    float x, y, z;
 
     Vector3() {
-        vec = 0.f;
+        x = y = z = 0.f;
     }
 
-    Vector3(float x) {
-        vec = x;
-        vec[3] = 0.f;
+    Vector3(float value) {
+        x = y = z = value;
     }
 
-    Vector3(float x, float y, float z) {
-        vec[0] = x;
-        vec[1] = y;
-        vec[2] = z;
-        vec[3] = 0.f;
+    Vector3(float _x, float _y, float _z) {
+        x = _x;
+        y = _y;
+        z = _z;
     }
 
-    Vector3(float_4 v) {
-        vec = v;
-    }
+    Vector3& operator=(const Vector3& b) { x = b.x; y = b.y; z = b.z; return *this; };
+    Vector3& operator=(const float b) { x = b; y = b; z = b; return *this; };
 
+    Vector3 operator+(const Vector3& b) { return Vector3(x + b.x, y + b.y, z + b.z); };
+    Vector3 operator+(const float b) { return Vector3(x + b, y + b, z + b); };
 
-    Vector3& operator=(const Vector3& b) { vec = b.vec; return *this; };
-    Vector3& operator=(const float b) { vec = b; vec[3] = 0.f; return *this; };
+    Vector3 operator-(const Vector3& b) { return Vector3(x - b.x, y - b.y, z - b.z); };
+    Vector3 operator-(const float b) { return Vector3(x - b, y - b, z - b); };
 
-    Vector3 operator+(const Vector3& b) { return Vector3(vec + b.vec); };
-    Vector3 operator+(const float b) { return Vector3(vec + float_4(b)); };
-
-    Vector3 operator-(const Vector3& b) { return Vector3(vec - b.vec); };
-    Vector3 operator-(const float b) { return Vector3(vec - float_4(b)); };
-
-    Vector3 operator*(const Vector3& b) { return Vector3(vec * b.vec); };
-    Vector3 operator*(const float b) { return Vector3(vec * float_4(b)); };
+    Vector3 operator*(const Vector3& b) { return Vector3(x * b.x, y * b.y, z * b.z); };
+    Vector3 operator*(const float b) { return Vector3(x * b, y * b, z * b); };
 
     float square() { 
-        float_4 s = vec * vec;
-        return s[0] + s[1] + s[2];    
+        return (x * x) + (y * y) + (z * z);
     };
-
-    float x() { return vec[0]; }
-    float y() { return vec[1]; }
-    float z() { return vec[2]; }
 };

@@ -254,8 +254,9 @@ void Industrializer::process(float sampleTime, float sampleRate)
             return;
         }
 
-        if (sampleCount % 3 == 0)
-            sample = clamp(nextSample(sampleRate / 3.f) * model->gain, -5.f, 5.f);
+        sample = nextSample(sampleRate);
+        // if (sampleCount % 3 == 0)
+            // sample = clamp(nextSample(sampleRate / 3.f) * model->gain, -5.f, 5.f);
     }
     else
     {
@@ -276,13 +277,13 @@ float Industrializer::nextSample(float rate)
 
     if (model->actuation)
     {
-        stasis = model->obj->nodes[model->outnode]->pos.z();
-        model->obj->nodes[model->innode]->pos.vec[2] += model->velocity;
+        stasis = model->obj->nodes[model->outnode]->pos.z;
+        model->obj->nodes[model->innode]->pos.z += model->velocity;
     }
     else
     {
         stasis = 0;
-        model->obj->nodes[model->innode]->pos.vec[0] += model->velocity;
+        model->obj->nodes[model->innode]->pos.x += model->velocity;
     }
 
     hipass_coeff = pow(0.5, 5.0 / rate);
@@ -292,10 +293,10 @@ float Industrializer::nextSample(float rate)
     ps_metal_obj_perturb(model->obj, model->speed, damp);
 
     if (model->actuation)
-        sample = model->obj->nodes[model->outnode]->pos.z() - stasis;
+        sample = model->obj->nodes[model->outnode]->pos.z - stasis;
     else
     {
-        sample = model->obj->nodes[model->outnode]->pos.x() - stasis;
+        sample = model->obj->nodes[model->outnode]->pos.x - stasis;
     }
 
     hipass = hipass_coeff * hipass + (1.0 - hipass_coeff) * sample;

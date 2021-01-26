@@ -1,9 +1,6 @@
 #pragma once
 
-#include "rack.hpp"
 #include "psphymod/psmetalobj.h"
-
-using namespace rack;
 
 typedef enum
 {
