@@ -1,5 +1,11 @@
 #pragma once
 
+#include <memory>
+#include "psphymod/metal_object.hpp"
+#include "psphymod/metal_object_rod.hpp"
+#include "psphymod/metal_object_pipe.hpp"
+#include "psphymod/metal_object_sheet.hpp"
+
 #include "psphymod/psmetalobj.h"
 
 typedef enum
@@ -32,6 +38,8 @@ typedef enum {
 
 typedef struct
 {
+    std::shared_ptr<MetalObject> metalObject;
+
     PSObjType obj_type;
     PSMetalObj *obj;
 

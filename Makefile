@@ -16,14 +16,16 @@
 
 EXE = steelmill
 IMGUI_DIR = libs/imgui
-SOURCES = src/main.cpp src/psphymod/psmetalobj.cpp src/dsp.cpp
+SOURCES = src/main.cpp src/dsp.cpp
+SOURCES += $(wildcard src/psphymod/*.cpp)
 SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
 SOURCES += $(IMGUI_DIR)/backends/imgui_impl_sdl.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
-OBJS = $(addsuffix .o, $(basename $(SOURCES)))
+# OBJS = $(addsuffix .o, $(basename $(SOURCES)))
+
 UNAME_S := $(shell uname -s)
 
 CXXFLAGS = -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
-CXXFLAGS += -g -Wall -Wformat
+CXXFLAGS += -g -Wall -fpermissive -Wformat -MD
 LIBS =
 
 ##---------------------------------------------------------------------
@@ -59,6 +61,10 @@ CXXFLAGS += -Ilibs/gl3w -DIMGUI_IMPL_OPENGL_LOADER_GL3W
 ##---------------------------------------------------------------------
 ## BUILD FLAGS PER PLATFORM
 ##---------------------------------------------------------------------
+
+# DEPS = $(patsubst %.cpp,%.d,$(SOURCES))
+DEPS = $(addsuffix .d, $(basename $(SOURCES)))
+OBJS = $(addsuffix .o, $(basename $(SOURCES)))
 
 ifeq ($(UNAME_S), Linux) #LINUX
 	ECHO_MESSAGE = "Linux"
@@ -109,4 +115,7 @@ $(EXE): $(OBJS)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS) -static-libgcc -static-libstdc++
 
 clean:
-	rm -f $(EXE) $(OBJS)
+	rm -f $(EXE) $(OBJS) $(DEPS)
+
+.PHONY: all clean
+-include $(DEPS)

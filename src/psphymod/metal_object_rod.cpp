@@ -1,0 +1,38 @@
+#include "metal_object_rod.hpp"
+
+MetalObjectRod::MetalObjectRod(int height, float tension) : MetalObject(height) {
+    this->initialize(height, tension);
+}
+
+void MetalObjectRod::initialize(int height, float tension) {
+    std::shared_ptr<ObjectNode> node;
+
+    nodes.clear();
+    nodes.reserve(height);
+
+    for (int i = 0; i < height; i++) {
+        node = std::make_shared<ObjectNode>();
+        node->vel = Vector3();
+        node->pos = Vector3(0.f, 0.f, i * tension);
+        nodes.push_back(node);
+    }
+
+    for (int i = 0; i < height; i++)
+    {
+        if (i == 0)
+        {
+            nodes[i]->neighbors.push_back(nodes[1]);
+            nodes[i]->anchor = true;
+        }
+        else if (i == height - 1)
+        {
+            nodes[i]->neighbors.push_back(nodes[i - 1]);
+            nodes[i]->anchor = true;
+        }
+        else
+        {
+            nodes[i]->neighbors.push_back(nodes[i - 1]);
+            nodes[i]->neighbors.push_back(nodes[i + 1]);
+        }
+    }
+}
