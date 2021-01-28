@@ -1,10 +1,14 @@
 #include "dsp.hpp"
 
-Industrializer::Industrializer()
+SteelmillDSP::SteelmillDSP()
 {
-    model = new PSPhysMod();
+    model = std::make_shared<PSPhysMod>();
+    obj_type = PS_OBJECT_TUBE;
 
-    model->obj_type = PS_OBJECT_PLANE;
+    height = 5;
+    width = 5;
+    tension = 4.0f;
+
     model->height = 5;
     model->width = 5;
     model->tension = 4.0f;
@@ -15,9 +19,10 @@ Industrializer::Industrializer()
     model->gain = 1.0f;
 
     changeShape(PSObjType::PS_OBJECT_TUBE);
+    metalObject->initializeNodes();
 }
 
-void Industrializer::trigger()
+void SteelmillDSP::trigger()
 {
     isTriggered = true;
     timeout = 10;
@@ -25,7 +30,7 @@ void Industrializer::trigger()
     hipass = 0;
     lowpass = 0;
 
-    switch (model->obj_type)
+    switch (obj_type)
     {
     case PSObjType::PS_OBJECT_ROD:
         ps_metal_obj_rod_initialize(model->obj, model->height, model->tension);
@@ -40,11 +45,13 @@ void Industrializer::trigger()
     default:
         break;
     };
+
+    metalObject->initializeNodes();
 }
 
-void Industrializer::changeShape(PSObjType shape)
+void SteelmillDSP::changeShape(PSObjType shape)
 {
-    model->obj_type = shape;
+    obj_type = shape;
 
     if (model->obj)
         ps_metal_obj_free(model->obj);
@@ -53,13 +60,14 @@ void Industrializer::changeShape(PSObjType shape)
     {
     case PSObjType::PS_OBJECT_TUBE:
         model->obj = ps_metal_obj_new_tube(model->height, model->width, model->tension);
-
+        metalObject = std::make_shared<MetalObjectPipe>(width, height, tension);
         /*
             value: model->width + model->width / 2
             lower: model->width
             upper: model->width * (model->height - 1) - 1
         */
         model->innode = model->width + model->height / 2;
+        metalObject->innode = width + height / 2;
 
         /*
             value: (model->height - 2) * model->width
@@ -67,9 +75,12 @@ void Industrializer::changeShape(PSObjType shape)
             upper: model->width * (model->height - 1) - 1
         */
         model->outnode = (model->height - 2) * model->width;
+        metalObject->outnode = (height - 2) * width;
         break;
     case PSObjType::PS_OBJECT_ROD:
         model->obj = ps_metal_obj_new_rod(model->height, model->tension);
+
+        metalObject = std::make_shared<MetalObjectRod>(height, tension);
 
         /*
             value: 1
@@ -77,6 +88,7 @@ void Industrializer::changeShape(PSObjType shape)
             upper: model->length - 2
         */
         model->innode = 1;
+        metalObject->innode = 1;
 
         /*
             value: model->height - 2
@@ -84,16 +96,18 @@ void Industrializer::changeShape(PSObjType shape)
             upper: model->height - 2
         */
         model->outnode = model->height - 2;
+        metalObject->outnode = height - 2;
         break;
     case PSObjType::PS_OBJECT_PLANE:
         model->obj = ps_metal_obj_new_plane(model->height, model->width, model->tension);
-
+        metalObject = std::make_shared<MetalObjectSheet>(width, height, tension);
         /*
             value: 1
             lower: 1
             upper: model->height * model->width - 2
         */
         model->innode = 1;
+        metalObject->innode = 1;
 
         /*
             value: (model->height - 1) * model->width - 1
@@ -101,6 +115,7 @@ void Industrializer::changeShape(PSObjType shape)
             upper: model->height * model->width - 2
         */
         model->outnode = (model->height - 1) * model->width - 1;
+        metalObject->outnode = (height - 1) * width - 1;
         break;
 
     default:
@@ -110,12 +125,12 @@ void Industrializer::changeShape(PSObjType shape)
     isTriggered = false;
 }
 
-void Industrializer::changeActuation(ActuationType type)
+void SteelmillDSP::changeActuation(ActuationType type)
 {
     model->actuation = type;
 }
 
-void Industrializer::changeSetting(SettingType setting, float value)
+void SteelmillDSP::changeSetting(SettingType setting, float value)
 {
     int h, w;
     bool rerender = false;
@@ -175,10 +190,10 @@ void Industrializer::changeSetting(SettingType setting, float value)
     }
 
     if (rerender)
-        changeShape(model->obj_type);
+        changeShape(obj_type);
 }
 
-void Industrializer::updateHitNode(float value) {
+void SteelmillDSP::updateHitNode(float value) {
     int min, max;
     
     if (value == model->innodeNormal) {
@@ -186,8 +201,9 @@ void Industrializer::updateHitNode(float value) {
     }
 
     model->innodeNormal = value;
-    
-    switch(model->obj_type) {
+    metalObject->innodeNormal = value;
+
+    switch(obj_type) {
         case PSObjType::PS_OBJECT_TUBE:
             min = model->width;
             max = model->width * (model->height - 1) - 1;
@@ -205,9 +221,10 @@ void Industrializer::updateHitNode(float value) {
     }
 
     model->innode = floor((max - min) * value + min);
+    metalObject->innode = floor((max - min) * value + min);
 }
 
-void Industrializer::updateSampleNode(float value) {
+void SteelmillDSP::updateSampleNode(float value) {
     int min, max;
 
     if (value == model->outnodeNormal)
@@ -217,7 +234,7 @@ void Industrializer::updateSampleNode(float value) {
 
     model->outnodeNormal = value;
 
-    switch (model->obj_type)
+    switch (obj_type)
     {
     case PSObjType::PS_OBJECT_TUBE:
         min = model->width;
@@ -236,9 +253,10 @@ void Industrializer::updateSampleNode(float value) {
     }
 
     model->outnode = floor((max - min) * value + min);
+    metalObject->outnode = floor((max - min) * value + min);
 }
 
-void Industrializer::process(float sampleTime, float sampleRate)
+void SteelmillDSP::process(float sampleTime, float sampleRate)
 {
     sampleCount = (sampleCount + 1) % (int)sampleRate;
 
@@ -264,7 +282,7 @@ void Industrializer::process(float sampleTime, float sampleRate)
     }
 }
 
-float Industrializer::nextSample(float rate)
+float SteelmillDSP::nextSample(float rate)
 {
     // Target attenuation before ending
     // TODO: Make this configurable?

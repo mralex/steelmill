@@ -4,12 +4,16 @@
 // If you are new to Dear ImGui, read documentation from the docs/ folder + read the top of imgui.cpp.
 // Read online: https://github.com/ocornut/imgui/tree/master/docs
 
+#include <memory>
+
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
 #include <stdio.h>
 #include <SDL.h>
 #include <GL/gl3w.h>            // Initialize with gl3wInit()
+
+#include "dsp.hpp"
 
 // Main code
 int main(int, char**)
@@ -93,16 +97,10 @@ int main(int, char**)
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    float tension;
-    int width = 3;
-    int height = 3;
-    int mode = 0;
-
     int windowWidth = 800;
     int windowHeight = 600;
 
-    int hitAt = 0;
-    int sampleFrom = 30;
+    std::shared_ptr<SteelmillDSP> dsp = std::make_shared<SteelmillDSP>();
 
     // Main loop
     bool done = false;
@@ -156,39 +154,51 @@ int main(int, char**)
                 ImGui::EndMenuBar();
             }
 
-            ImGui::RadioButton("Tube", mode == 0);
+            if (ImGui::RadioButton("Pipe", dsp->obj_type == PSObjType::PS_OBJECT_TUBE)) {
+                dsp->obj_type = PSObjType::PS_OBJECT_TUBE;
+            }
             ImGui::SameLine();
-            ImGui::RadioButton("Rod", mode == 1);
+            if (ImGui::RadioButton("Rod", dsp->obj_type == PSObjType::PS_OBJECT_ROD)) {
+                dsp->obj_type = PSObjType::PS_OBJECT_ROD;
+            }
             ImGui::SameLine();
-            ImGui::RadioButton("Plane", mode == 2);
+            if (ImGui::RadioButton("Plane", dsp->obj_type == PSObjType::PS_OBJECT_PLANE)) {
+                dsp->obj_type = PSObjType::PS_OBJECT_PLANE;
+            }
 
             ImGui::Separator();
 
-            ImGui::RadioButton("Compress", mode == 0);
+            if (ImGui::RadioButton("Compress", dsp->actuationType == ActuationType::ACTUATION_COMPRESSION))
+            {
+                dsp->actuationType = ActuationType::ACTUATION_COMPRESSION;
+            }
             ImGui::SameLine();
-            ImGui::RadioButton("Hit", mode == 1);
+            if (ImGui::RadioButton("Hit", dsp->actuationType == ActuationType::ACTUATION_HIT))
+            {
+                dsp->actuationType = ActuationType::ACTUATION_HIT;
+            }
 
             ImGui::Separator();
             
-            ImGui::SliderInt("Width", &width, 3, 30);
-            ImGui::SliderInt("Height", &height, 3, 30);
-
-            ImGui::Separator();
-            
-            ImGui::SliderInt("Hit At", &hitAt, 3, 30);
-            ImGui::SliderInt("Sample From", &sampleFrom, 3, 30);
+            ImGui::SliderInt("Width", &dsp->width, 3, 30);
+            ImGui::SliderInt("Height", &dsp->height, 3, 30);
 
             ImGui::Separator();
 
-            ImGui::SliderFloat("Tension", &tension, 0.f, 1.f, "%.3f", 0);
-            ImGui::SliderFloat("Speed", &tension, 0.f, 1.f, "%.3f", 0);
-            ImGui::SliderFloat("Damping", &tension, 0.f, 1.f, "%.3f", 0);
-            ImGui::SliderFloat("Velocity", &tension, 0.f, 1.f, "%.3f", 0);
+            ImGui::SliderFloat("Hit At", &dsp->innodeNormal, 0.f, 1.f);
+            ImGui::SliderFloat("Sample From", &dsp->outnodeNormal, 0.f, 1.f);
 
             ImGui::Separator();
 
-            ImGui::SliderFloat("Sample Length", &tension, 0.f, 20.f, "%.3f", 0);
-            ImGui::SliderFloat("Attenuation Limit", &tension, 0.f, 60.f, "-%.3f", 0);
+            ImGui::SliderFloat("Tension", &dsp->tension, 0.f, 16.f, "%.3f", 0);
+            ImGui::SliderFloat("Speed", &dsp->speed, 0.f, 1.f, "%.3f", 0);
+            ImGui::SliderFloat("Damping", &dsp->damping, 0.f, 1.f, "%.3f", 0);
+            ImGui::SliderFloat("Velocity", &dsp->velocity, 0.f, 1.f, "%.3f", 0);
+
+            ImGui::Separator();
+
+            ImGui::SliderFloat("Sample Length", &dsp->length, 0.f, 20.f, "%.3f", 0);
+            ImGui::SliderFloat("Attenuation Limit", &dsp->attenuation, 0.f, 60.f, "-%.3f", 0);
 
             ImGui::Separator();
 

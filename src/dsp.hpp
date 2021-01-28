@@ -55,12 +55,24 @@ typedef struct
 } PSPhysMod;
 
 
-class Industrializer {
+class SteelmillDSP {
 public:
+    PSObjType obj_type;
+    ActuationType actuationType;
+
+    int width;
+    int height;
+    float tension;
+
+    float innodeNormal, outnodeNormal;
+    float speed, damping, velocity;
+
+    float length, attenuation;
+
     bool isTriggered = false;
     float sample = 0;
 
-    Industrializer();
+    SteelmillDSP();
 
     void trigger();
     void process(float, float);
@@ -74,7 +86,9 @@ public:
 private:
     int sampleCount = 0;
     float timeout;
-    PSPhysMod *model = nullptr;
+
+    std::shared_ptr<MetalObject> metalObject = nullptr;
+    std::shared_ptr<PSPhysMod> model = nullptr;
 
     float maxamp, hipass, lowpass;
 
