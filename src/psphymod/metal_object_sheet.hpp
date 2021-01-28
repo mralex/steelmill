@@ -5,5 +5,5 @@
 class MetalObjectSheet : public MetalObject {
 public:
     MetalObjectSheet(int, int, float);
-    void initialize(int, int, float);
+    void initializeNodes() override;
 };

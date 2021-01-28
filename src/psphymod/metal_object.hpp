@@ -42,10 +42,18 @@ public:
 
     int width;
     int height;
-    float tension;
+    int innode, outnode;
+    float innodeNormal, outnodeNormal;
+    float tension, speed, damping;
+    int actuation;
+    float velocity;
+    float percent;
 
-    MetalObject(const int size);
+    MetalObject();
     ~MetalObject();
 
+    virtual void initializeNodes() {}
+
     void perturb(const float, const float);
+    void render(int sampleRate, size_t length, float *samples, float attenuation);
 };

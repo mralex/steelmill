@@ -2,11 +2,15 @@
 
 #include "metal_object_sheet.hpp"
 
-MetalObjectSheet::MetalObjectSheet(int width, int height, float tension) : MetalObject(height) {
-    this->initialize(width, height, tension);
+MetalObjectSheet::MetalObjectSheet(int width, int height, float tension) {
+    this->width = width;
+    this->height = height;
+    this->tension = tension;
+
+    this->initializeNodes();
 }
 
-void MetalObjectSheet::initialize(int width, int height, float tension)
+void MetalObjectSheet::initializeNodes()
 {
     std::shared_ptr<ObjectNode> node;
 

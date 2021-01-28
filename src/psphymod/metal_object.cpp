@@ -4,8 +4,7 @@
 #include "metal_object.hpp"
 
 
-MetalObject::MetalObject(const int size) {
-    nodes.reserve(size);
+MetalObject::MetalObject() {
 }
 
 MetalObject::~MetalObject() {
@@ -43,4 +42,8 @@ void MetalObject::perturb(const float speed, const float damp) {
             inode->pos = inode->pos + inode->vel * speed;
         }
     }
+}
+
+void MetalObject::render(int sampleRate, size_t length, float *samples, float attenuation) {
+
 }

@@ -1,10 +1,13 @@
 #include "metal_object_rod.hpp"
 
-MetalObjectRod::MetalObjectRod(int height, float tension) : MetalObject(height) {
-    this->initialize(height, tension);
+MetalObjectRod::MetalObjectRod(int height, float tension) {
+    this->height = height;
+    this->tension = tension;
+    this->initializeNodes();
 }
 
-void MetalObjectRod::initialize(int height, float tension) {
+void MetalObjectRod::initializeNodes()
+{
     std::shared_ptr<ObjectNode> node;
 
     nodes.clear();

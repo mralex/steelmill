@@ -5,5 +5,5 @@
 class MetalObjectRod : public MetalObject {
 public:
     MetalObjectRod(int, float);
-    void initialize(int, float);
+    void initializeNodes() override;
 };
