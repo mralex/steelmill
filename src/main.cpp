@@ -202,7 +202,10 @@ int main(int, char**)
 
             ImGui::Separator();
 
-            ImGui::Button("Render");
+            if (ImGui::Button("Render") && !dsp->isRendering) {
+                dsp->prepareObject();
+                dsp->render();
+            }
             ImGui::SameLine();
             ImGui::Button("Play");
             ImGui::SameLine();

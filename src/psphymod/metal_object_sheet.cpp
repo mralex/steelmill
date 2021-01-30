@@ -17,7 +17,6 @@ void MetalObjectSheet::initializeNodes()
     nodes.clear();
     nodes.reserve(height);
 
-    int n = 0;
     for (int y = 0; y < height; y++)
     {
         for (int x = 0; x < width; x++)
@@ -26,7 +25,14 @@ void MetalObjectSheet::initializeNodes()
             node->vel = Vector3();
             node->pos = Vector3(0.f, (float)x, y * tension);
             nodes.push_back(node);
+        }
+    }
 
+    int n = 0;
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
             int count = 0;
             for (int dy = -1; dy <= 1; dy++)
             {
@@ -42,30 +48,4 @@ void MetalObjectSheet::initializeNodes()
             n++;
         }
     }
-
-    // for (int i = 0; i < height; i++) {
-    //     node = std::make_shared<ObjectNode>();
-    //     node->vel = Vector3();
-    //     node->pos = Vector3(0.f, 0.f, i * tension);
-    //     nodes.push_back(node);
-    // }
-
-    // for (int i = 0; i < height; i++)
-    // {
-    //     if (i == 0)
-    //     {
-    //         nodes[i]->neighbors[0] = nodes[1];
-    //         nodes[i]->anchor = true;
-    //     }
-    //     else if (i == height - 1)
-    //     {
-    //         nodes[i]->neighbors[0] = nodes[i - 1];
-    //         nodes[i]->anchor = true;
-    //     }
-    //     else
-    //     {
-    //         nodes[i]->neighbors[0] = nodes[i - 1];
-    //         nodes[i]->neighbors[1] = nodes[i + 1];
-    //     }
-    // }
 }

@@ -336,3 +336,65 @@ float SteelmillDSP::nextSample(float rate)
 
     return sample;
 }
+
+void SteelmillDSP::prepareObject() {
+    switch (obj_type)
+    {
+    case PSObjType::PS_OBJECT_TUBE:
+        metalObject = std::make_shared<MetalObjectPipe>(width, height, tension);
+        /*
+            value: model->width + model->width / 2
+            lower: model->width
+            upper: model->width * (model->height - 1) - 1
+        */
+        metalObject->innode = width + height / 2;
+
+        /*
+            value: (model->height - 2) * model->width
+            lower: model->width
+            upper: model->width * (model->height - 1) - 1
+        */
+        metalObject->outnode = (height - 2) * width;
+        break;
+    case PSObjType::PS_OBJECT_ROD:
+        metalObject = std::make_shared<MetalObjectRod>(height, tension);
+
+        /*
+            value: 1
+            lower: 1
+            upper: model->length - 2
+        */
+        metalObject->innode = 1;
+
+        /*
+            value: model->height - 2
+            lower: 1
+            upper: model->height - 2
+        */
+        metalObject->outnode = height - 2;
+        break;
+    case PSObjType::PS_OBJECT_PLANE:
+        metalObject = std::make_shared<MetalObjectSheet>(width, height, tension);
+        /*
+            value: 1
+            lower: 1
+            upper: model->height * model->width - 2
+        */
+        metalObject->innode = 1;
+
+        /*
+            value: (model->height - 1) * model->width - 1
+            lower: 1
+            upper: model->height * model->width - 2
+        */
+        metalObject->outnode = (height - 1) * width - 1;
+        break;
+
+    default:
+        break;
+    }
+}
+
+void SteelmillDSP::render() {
+
+}

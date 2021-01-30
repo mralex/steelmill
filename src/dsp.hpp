@@ -70,11 +70,19 @@ public:
     float length, attenuation;
 
     bool isTriggered = false;
+    bool isRendering = false;
+    float percentComplete = 0.f;
     float sample = 0;
 
     SteelmillDSP();
 
     void trigger();
+
+
+    void prepareObject();
+    void render();
+    
+    
     void process(float, float);
 
     void createObject(int);
