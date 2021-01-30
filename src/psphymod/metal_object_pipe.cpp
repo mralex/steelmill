@@ -1,4 +1,5 @@
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 
 #include "metal_object_pipe.hpp"
 
@@ -23,10 +24,11 @@ void MetalObjectPipe::initializeNodes()
         for (int x = 0; x < width; x++)
         {
             float angle = x * 2.0f * M_PI / width;
-
+            printf("angle? %.2f\n", angle);
             node = std::make_shared<ObjectNode>();
-            node->vel = Vector3();
+            node->vel = Vector3(0.f);
             node->pos = Vector3(cos(angle) * radius, sin(angle) * radius, y * tension);
+            printf("node pos: %.2f, %.2f, %.2f\n", node->pos.x, node->pos.y, node->pos.z);
             nodes.push_back(node);
         }
     }
@@ -36,6 +38,8 @@ void MetalObjectPipe::initializeNodes()
     {
         for (int x = 0; x < width; x++)
         {
+            node = nodes[n];
+            
             if (x == 0)
                 node->neighbors.push_back(nodes[y * width + width - 1]);
             else

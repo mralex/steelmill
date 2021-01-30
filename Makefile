@@ -25,7 +25,7 @@ SOURCES += $(IMGUI_DIR)/backends/imgui_impl_sdl.cpp $(IMGUI_DIR)/backends/imgui_
 UNAME_S := $(shell uname -s)
 
 CXXFLAGS = -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends
-CXXFLAGS += -g -Wall -fpermissive -Wformat -MD
+CXXFLAGS += -std=c++14 -g -Wall -fpermissive -Wformat -MD
 LIBS =
 
 ##---------------------------------------------------------------------

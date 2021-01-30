@@ -24,6 +24,10 @@
 #include <memory>
 #include "vector3.hpp"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979
+#endif
+
 struct ObjectNode {
     bool anchor;
     Vector3 pos;
@@ -48,6 +52,7 @@ public:
     int actuation;
     float velocity;
     float percent;
+    bool stop = false;
 
     MetalObject();
     ~MetalObject();

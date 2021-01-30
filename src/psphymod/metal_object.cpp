@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -19,6 +20,7 @@ void MetalObject::perturb(const float speed, const float damp) {
 
     for(auto inode : nodes)
     {
+
         if (!inode->anchor)
         {
             sum = Vector3(0.f);
@@ -26,6 +28,10 @@ void MetalObject::perturb(const float speed, const float damp) {
             for (auto neighbor : inode->neighbors)
             {
                 dif = inode->pos - neighbor->pos;
+                // printf("inode pos: %.4f\n", inode->pos.x);
+                // printf("neighbor pos: %.4f\n", neighbor->pos.x);
+                // printf("dif pos: %.4f\n", dif.x);
+
                 temp = 1.0f - sqrt(dif.square());
                 sum = sum + dif * temp;
             }

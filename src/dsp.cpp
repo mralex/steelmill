@@ -1,25 +1,21 @@
 #include "dsp.hpp"
+#include "stdio.h"
 
 SteelmillDSP::SteelmillDSP()
 {
     model = std::make_shared<PSPhysMod>();
     obj_type = PS_OBJECT_TUBE;
+    actuationType = ActuationType::ACTUATION_COMPRESSION;
 
     height = 5;
     width = 5;
     tension = 4.0f;
-
-    model->height = 5;
-    model->width = 5;
-    model->tension = 4.0f;
-    model->speed = 0.2f;
-    model->damping = 0.05f;
-    model->actuation = 0;
-    model->velocity = 1.0f;
-    model->gain = 1.0f;
-
-    changeShape(PSObjType::PS_OBJECT_TUBE);
-    metalObject->initializeNodes();
+    speed = 0.2f;
+    damping = 0.05f;
+    velocity = 1.0f;
+    length = 10.f;
+    innodeNormal = 0.f;
+    outnodeNormal = 1.f;
 }
 
 void SteelmillDSP::trigger()
@@ -49,82 +45,6 @@ void SteelmillDSP::trigger()
     metalObject->initializeNodes();
 }
 
-void SteelmillDSP::changeShape(PSObjType shape)
-{
-    obj_type = shape;
-
-    if (model->obj)
-        ps_metal_obj_free(model->obj);
-
-    switch (shape)
-    {
-    case PSObjType::PS_OBJECT_TUBE:
-        model->obj = ps_metal_obj_new_tube(model->height, model->width, model->tension);
-        metalObject = std::make_shared<MetalObjectPipe>(width, height, tension);
-        /*
-            value: model->width + model->width / 2
-            lower: model->width
-            upper: model->width * (model->height - 1) - 1
-        */
-        model->innode = model->width + model->height / 2;
-        metalObject->innode = width + height / 2;
-
-        /*
-            value: (model->height - 2) * model->width
-            lower: model->width
-            upper: model->width * (model->height - 1) - 1
-        */
-        model->outnode = (model->height - 2) * model->width;
-        metalObject->outnode = (height - 2) * width;
-        break;
-    case PSObjType::PS_OBJECT_ROD:
-        model->obj = ps_metal_obj_new_rod(model->height, model->tension);
-
-        metalObject = std::make_shared<MetalObjectRod>(height, tension);
-
-        /*
-            value: 1
-            lower: 1
-            upper: model->length - 2
-        */
-        model->innode = 1;
-        metalObject->innode = 1;
-
-        /*
-            value: model->height - 2
-            lower: 1
-            upper: model->height - 2
-        */
-        model->outnode = model->height - 2;
-        metalObject->outnode = height - 2;
-        break;
-    case PSObjType::PS_OBJECT_PLANE:
-        model->obj = ps_metal_obj_new_plane(model->height, model->width, model->tension);
-        metalObject = std::make_shared<MetalObjectSheet>(width, height, tension);
-        /*
-            value: 1
-            lower: 1
-            upper: model->height * model->width - 2
-        */
-        model->innode = 1;
-        metalObject->innode = 1;
-
-        /*
-            value: (model->height - 1) * model->width - 1
-            lower: 1
-            upper: model->height * model->width - 2
-        */
-        model->outnode = (model->height - 1) * model->width - 1;
-        metalObject->outnode = (height - 1) * width - 1;
-        break;
-
-    default:
-        break;
-    }
-
-    isTriggered = false;
-}
-
 void SteelmillDSP::changeActuation(ActuationType type)
 {
     model->actuation = type;
@@ -132,157 +52,143 @@ void SteelmillDSP::changeActuation(ActuationType type)
 
 void SteelmillDSP::changeSetting(SettingType setting, float value)
 {
-    int h, w;
-    bool rerender = false;
+    // int h, w;
+    // bool rerender = false;
 
-    // Settings that require a re-render
-    switch (setting)
-    {
-    case SETTING_HEIGHT:
-        h = (int)value;
-        if (model->height != h)
-        {
-            model->height = h;
-            rerender = true;
-        }
-        break;
-    case SETTING_WIDTH:
-        w = (int)value;
-        if (model->width != w)
-        {
-            model->width = w;
-            rerender = true;
-        }
-        break;
-    default:
-        break;
-    }
+    // // Settings that require a re-render
+    // switch (setting)
+    // {
+    // case SETTING_HEIGHT:
+    //     h = (int)value;
+    //     if (model->height != h)
+    //     {
+    //         model->height = h;
+    //         rerender = true;
+    //     }
+    //     break;
+    // case SETTING_WIDTH:
+    //     w = (int)value;
+    //     if (model->width != w)
+    //     {
+    //         model->width = w;
+    //         rerender = true;
+    //     }
+    //     break;
+    // default:
+    //     break;
+    // }
 
-    // Settings that are 0-1
-    switch (setting)
-    {
-    case SETTING_TENSION:
-        if (fabs(model->tension - value) > 0.02)
-        {
-            model->tension = value;
-        }
-        break;
-    case SETTING_SPEED:
-        model->speed = value;
-        break;
-    case SETTING_DAMPING:
-        model->damping = value;
-        break;
-    case SETTING_VELOCITY:
-        model->velocity = value;
-        break;
-    case SETTING_HIT:
-        updateHitNode(value);
-        break;
-    case SETTING_SAMPLE:
-        updateSampleNode(value);
-        break;
-    case SETTING_GAIN:
-        model->gain = value;
-        break;
-    default:
-        break;
-    }
+    // // Settings that are 0-1
+    // switch (setting)
+    // {
+    // case SETTING_TENSION:
+    //     if (fabs(model->tension - value) > 0.02)
+    //     {
+    //         model->tension = value;
+    //     }
+    //     break;
+    // case SETTING_SPEED:
+    //     model->speed = value;
+    //     break;
+    // case SETTING_DAMPING:
+    //     model->damping = value;
+    //     break;
+    // case SETTING_VELOCITY:
+    //     model->velocity = value;
+    //     break;
+    // case SETTING_HIT:
+    //     updateHitNode(value);
+    //     break;
+    // case SETTING_SAMPLE:
+    //     updateSampleNode(value);
+    //     break;
+    // case SETTING_GAIN:
+    //     model->gain = value;
+    //     break;
+    // default:
+    //     break;
+    // }
 
-    if (rerender)
-        changeShape(obj_type);
+    // if (rerender)
+    //     changeShape(obj_type);
 }
 
-void SteelmillDSP::updateHitNode(float value) {
+void SteelmillDSP::setHitNode() {
     int min, max;
-    
-    if (value == model->innodeNormal) {
-        return;
-    }
-
-    model->innodeNormal = value;
-    metalObject->innodeNormal = value;
 
     switch(obj_type) {
         case PSObjType::PS_OBJECT_TUBE:
-            min = model->width;
-            max = model->width * (model->height - 1) - 1;
+            min = metalObject->width;
+            max = metalObject->width * (metalObject->height - 1) - 1;
             break;
         case PSObjType::PS_OBJECT_ROD:
             min = 1;
-            max = model->height - 2;
+            max = metalObject->height - 2;
             break;
         case PSObjType::PS_OBJECT_PLANE:
             min = 1;
-            max = model->height * model->width - 2;
+            max = metalObject->height * metalObject->width - 2;
             break;
         default:
             break;
     }
 
-    model->innode = floor((max - min) * value + min);
-    metalObject->innode = floor((max - min) * value + min);
+    metalObject->innode = (int)((max - min) * innodeNormal + min);
+    printf("set innode to %d\n", metalObject->innode);
 }
 
-void SteelmillDSP::updateSampleNode(float value) {
+void SteelmillDSP::setSampleNode() {
     int min, max;
-
-    if (value == model->outnodeNormal)
-    {
-        return;
-    }
-
-    model->outnodeNormal = value;
 
     switch (obj_type)
     {
     case PSObjType::PS_OBJECT_TUBE:
-        min = model->width;
-        max = model->width * (model->height - 1) - 1;
+        min = metalObject->width;
+        max = metalObject->width * (metalObject->height - 1) - 1;
         break;
     case PSObjType::PS_OBJECT_ROD:
         min = 1;
-        max = model->height - 2;
+        max = metalObject->height - 2;
         break;
     case PSObjType::PS_OBJECT_PLANE:
         min = 1;
-        max = model->height * model->width - 2;
+        max = metalObject->height * metalObject->width - 2;
         break;
     default:
         break;
     }
 
-    model->outnode = floor((max - min) * value + min);
-    metalObject->outnode = floor((max - min) * value + min);
+    metalObject->outnode = (int)((max - min) * outnodeNormal + min);
+    printf("set outnode to %d\n", metalObject->outnode);
 }
 
 void SteelmillDSP::process(float sampleTime, float sampleRate)
 {
-    sampleCount = (sampleCount + 1) % (int)sampleRate;
+    // sampleCount = (sampleCount + 1) % (int)sampleRate;
 
-    if (isTriggered)
-    {
-        timeout -= sampleTime;
+    // if (isTriggered)
+    // {
+    //     timeout -= sampleTime;
 
-        if (timeout <= 0)
-        {
-            timeout = 0;
-            isTriggered = false;
-            sample = 0;
-            return;
-        }
+    //     if (timeout <= 0)
+    //     {
+    //         timeout = 0;
+    //         isTriggered = false;
+    //         sample = 0;
+    //         return;
+    //     }
 
-        sample = nextSample(sampleRate);
-        // if (sampleCount % 3 == 0)
-            // sample = clamp(nextSample(sampleRate / 3.f) * model->gain, -5.f, 5.f);
-    }
-    else
-    {
-        sample = 0;
-    }
+    //     sample = nextSample(sampleRate);
+    //     // if (sampleCount % 3 == 0)
+    //         // sample = clamp(nextSample(sampleRate / 3.f) * model->gain, -5.f, 5.f);
+    // }
+    // else
+    // {
+    //     sample = 0;
+    // }
 }
 
-float SteelmillDSP::nextSample(float rate)
+size_t SteelmillDSP::doRender(int rate, size_t size, float *samples)
 {
     // Target attenuation before ending
     // TODO: Make this configurable?
@@ -293,108 +199,101 @@ float SteelmillDSP::nextSample(float rate)
 
     float curr_att = 0.0f;
 
-    if (model->actuation)
+    if (actuationType == ActuationType::ACTUATION_COMPRESSION)
     {
-        stasis = model->obj->nodes[model->outnode]->pos.z;
-        model->obj->nodes[model->innode]->pos.z += model->velocity;
+        stasis = metalObject->nodes[metalObject->outnode]->pos.z;
+        metalObject->nodes[metalObject->innode]->pos.z += velocity;
     }
     else
     {
         stasis = 0;
-        model->obj->nodes[model->innode]->pos.x += model->velocity;
+        metalObject->nodes[metalObject->innode]->pos.x += velocity;
     }
 
     hipass_coeff = pow(0.5, 5.0 / rate);
     lowpass_coeff = 1 - 20.0 / rate; /* 50 ms integrator */
-    damp = pow(0.5, 1.0 / (model->damping * rate));
+    damp = pow(0.5, 1.0 / (damping * rate));
 
-    ps_metal_obj_perturb(model->obj, model->speed, damp);
+    float maxvol = 0.001f;
+    int i;
+    for(i = 0; i < size && !metalObject->stop; i++) {
+        metalObject->perturb(speed, damp);
 
-    if (model->actuation)
-        sample = model->obj->nodes[model->outnode]->pos.z - stasis;
-    else
-    {
-        sample = model->obj->nodes[model->outnode]->pos.x - stasis;
+        if (actuationType == ActuationType::ACTUATION_COMPRESSION)
+            sample = metalObject->nodes[metalObject->outnode]->pos.z - stasis;
+        else
+        {
+            sample = metalObject->nodes[metalObject->outnode]->pos.x - stasis;
+        }
+
+        hipass = hipass_coeff * hipass + (1.0 - hipass_coeff) * sample;
+        samples[i] = sample - hipass;
+
+        if (fabs(samples[i]) > maxvol) {
+            maxvol = fabs(samples[i]);
+        }
+
+        lowpass = lowpass_coeff * lowpass + (1.0 - lowpass_coeff) * fabs(samples[i]);
+
+        if (maxamp < lowpass)
+            maxamp = lowpass;
+
+        // if (maxamp > 0.0)
+        //     curr_att = 20 * log10(lowpass / maxamp);
+
+        // if (curr_att <= att)
+        // {
+        //     isTriggered = false;
+        //     timeout = 0;
+        // }
     }
 
-    hipass = hipass_coeff * hipass + (1.0 - hipass_coeff) * sample;
-    sample -= hipass;
+    int length = i;
+    maxvol = 1.f / maxvol;
+    for (i = 0; i < length; i++) {
+        samples[i] *= maxvol;
 
-    lowpass = lowpass_coeff * lowpass + (1.0 - lowpass_coeff) * fabs(sample);
-
-    if (maxamp < lowpass)
-        maxamp = lowpass;
-
-    if (maxamp > 0.0)
-        curr_att = 20 * log10(lowpass / maxamp);
-
-    if (curr_att <= att)
-    {
-        isTriggered = false;
-        timeout = 0;
+        // printf("%.4f\n", samples[i]);
     }
 
-    return sample;
+    return length;
 }
 
 void SteelmillDSP::prepareObject() {
+    printf("Prepating object\n");
     switch (obj_type)
     {
     case PSObjType::PS_OBJECT_TUBE:
         metalObject = std::make_shared<MetalObjectPipe>(width, height, tension);
-        /*
-            value: model->width + model->width / 2
-            lower: model->width
-            upper: model->width * (model->height - 1) - 1
-        */
-        metalObject->innode = width + height / 2;
-
-        /*
-            value: (model->height - 2) * model->width
-            lower: model->width
-            upper: model->width * (model->height - 1) - 1
-        */
-        metalObject->outnode = (height - 2) * width;
         break;
     case PSObjType::PS_OBJECT_ROD:
         metalObject = std::make_shared<MetalObjectRod>(height, tension);
-
-        /*
-            value: 1
-            lower: 1
-            upper: model->length - 2
-        */
-        metalObject->innode = 1;
-
-        /*
-            value: model->height - 2
-            lower: 1
-            upper: model->height - 2
-        */
-        metalObject->outnode = height - 2;
         break;
     case PSObjType::PS_OBJECT_PLANE:
         metalObject = std::make_shared<MetalObjectSheet>(width, height, tension);
-        /*
-            value: 1
-            lower: 1
-            upper: model->height * model->width - 2
-        */
-        metalObject->innode = 1;
-
-        /*
-            value: (model->height - 1) * model->width - 1
-            lower: 1
-            upper: model->height * model->width - 2
-        */
-        metalObject->outnode = (height - 1) * width - 1;
         break;
 
     default:
         break;
     }
+
+    setHitNode();
+    setSampleNode();
 }
 
-void SteelmillDSP::render() {
+void SteelmillDSP::render(int sampleRate) {
+    int size = (int)(sampleRate * length);
+    data = (float *)malloc(sizeof(float) * size);
 
+    int i;
+
+    printf("Rendering... %d...", size);
+    isRendering = true;
+    doRender(sampleRate, size, data);
+
+    // for(i = 0; i < size && !metalObject->stop; i++) {
+    //     data[i] = doRe(sampleRate);
+    // }
+    printf("Done!\n");
+    isRendering = false;
 }

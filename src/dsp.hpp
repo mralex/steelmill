@@ -74,20 +74,21 @@ public:
     float percentComplete = 0.f;
     float sample = 0;
 
+    float *data;
+
     SteelmillDSP();
 
     void trigger();
 
 
     void prepareObject();
-    void render();
+    void render(int);
     
     
     void process(float, float);
 
     void createObject(int);
 
-    void changeShape(PSObjType);
     void changeActuation(ActuationType);
     void changeSetting(SettingType, float);
 
@@ -102,8 +103,8 @@ private:
 
     size_t currentSampleIndex;
 
-    float nextSample(float);
+    size_t doRender(int, size_t, float*);
 
-    void updateHitNode(float value);
-    void updateSampleNode(float value);
+    void setHitNode();
+    void setSampleNode();
 };

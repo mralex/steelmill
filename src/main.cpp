@@ -5,6 +5,7 @@
 // Read online: https://github.com/ocornut/imgui/tree/master/docs
 
 #include <memory>
+#include <thread>
 
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
@@ -203,13 +204,22 @@ int main(int, char**)
             ImGui::Separator();
 
             if (ImGui::Button("Render") && !dsp->isRendering) {
-                dsp->prepareObject();
-                dsp->render();
+                printf("Starting thread...");
+                std::thread t([&](){
+                    dsp->prepareObject();
+                    dsp->render(44100);
+                });
+
+                t.detach();
             }
             ImGui::SameLine();
             ImGui::Button("Play");
             ImGui::SameLine();
             ImGui::Button("Save");
+
+            if (dsp->isRendering) {
+                ImGui::Text("Rendering...");
+            }
 
             ImGui::End();
         }
