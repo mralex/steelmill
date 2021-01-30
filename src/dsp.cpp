@@ -1,6 +1,8 @@
 #include "dsp.hpp"
 #include "stdio.h"
 
+#include <SDL_mixer.h>
+
 SteelmillDSP::SteelmillDSP()
 {
     model = std::make_shared<PSPhysMod>();
@@ -284,16 +286,57 @@ void SteelmillDSP::prepareObject() {
 void SteelmillDSP::render(int sampleRate) {
     int size = (int)(sampleRate * length);
     data = (float *)malloc(sizeof(float) * size);
+    uint16_t *samples = (uint16_t *)malloc(sizeof(uint16_t) * size);
 
     int i;
 
     printf("Rendering... %d...", size);
     isRendering = true;
-    doRender(sampleRate, size, data);
+    size_t length = doRender(sampleRate, size, data);
+
+    for(i = 0; i < length; i++) {
+        int out;
+
+        if (data[i] >= 1.0)
+            out = 127;
+        else if (data[i] <= -1.0)
+            out = -128;
+        else
+            out = (int)((data[i] + 1.0) * 128.0 - 128.0);
+
+        samples[i] = out;
+    }
 
     // for(i = 0; i < size && !metalObject->stop; i++) {
     //     data[i] = doRe(sampleRate);
     // }
     printf("Done!\n");
+
+    int result = Mix_OpenAudio(sampleRate, AUDIO_S16SYS, 2, 512);
+    if (result < 0)
+    {
+        fprintf(stderr, "Unable to open audio: %s\n", SDL_GetError());
+        exit(-1);
+    }
+
+    result = Mix_AllocateChannels(4);
+    if (result < 0)
+    {
+        fprintf(stderr, "Unable to allocate mixing channels: %s\n", SDL_GetError());
+        exit(-1);
+    }
+
+    Mix_Chunk *mixSample;
+    // memset(mixSample, 0, sizeof(Mix_Chunk));
+    mixSample = Mix_QuickLoad_RAW(samples, length);
+    if (mixSample == nullptr)
+    {
+        fprintf(stderr, "Unable to load raw data: %s\n", SDL_GetError());
+        exit(-1);
+    }
+
+    Mix_PlayChannel(-1, mixSample, 0);
+    // Mix_FreeChunk(mixSample);
+
     isRendering = false;
 }

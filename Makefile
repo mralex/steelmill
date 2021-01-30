@@ -86,9 +86,9 @@ endif
 
 ifeq ($(findstring MINGW,$(UNAME_S)),MINGW)
    ECHO_MESSAGE = "MinGW"
-   LIBS += -lgdi32 -lopengl32 -limm32 `pkg-config --static --libs sdl2`
+   LIBS += -lgdi32 -lopengl32 -limm32 `pkg-config --static --libs SDL2_mixer`
 
-   CXXFLAGS += `pkg-config --cflags sdl2`
+   CXXFLAGS += `pkg-config --cflags SDL2_mixer`
    CFLAGS = $(CXXFLAGS)
 endif
 
