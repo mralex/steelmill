@@ -24,11 +24,13 @@ void MetalObjectPipe::initializeNodes()
         for (int x = 0; x < width; x++)
         {
             float angle = x * 2.0f * M_PI / width;
-            printf("angle? %.2f\n", angle);
-            node = std::make_shared<ObjectNode>();
+            node = std::make_shared<ObjectNode>((y == 0 || y == height - 1) ? 3 : 4);
             node->vel = Vector3(0.f);
             node->pos = Vector3(cos(angle) * radius, sin(angle) * radius, y * tension);
-            printf("node pos: %.2f, %.2f, %.2f\n", node->pos.x, node->pos.y, node->pos.z);
+
+            if (y == height - 1 || y == 0)
+                node->anchor = true;
+
             nodes.push_back(node);
         }
     }

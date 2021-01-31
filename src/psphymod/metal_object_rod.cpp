@@ -14,7 +14,7 @@ void MetalObjectRod::initializeNodes()
     nodes.reserve(height);
 
     for (int i = 0; i < height; i++) {
-        node = std::make_shared<ObjectNode>();
+        node = std::make_shared<ObjectNode>((i == 0 || i == height - 1) ? 1 : 2);
         node->vel = Vector3();
         node->pos = Vector3(0.f, 0.f, i * tension);
         nodes.push_back(node);

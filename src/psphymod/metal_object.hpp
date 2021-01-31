@@ -35,8 +35,8 @@ struct ObjectNode {
 
     std::vector<std::shared_ptr<ObjectNode>> neighbors;
 
-    ObjectNode() {
-        neighbors.reserve(8);
+    ObjectNode(int n) {
+        neighbors.reserve(n);
     }
 };
 
