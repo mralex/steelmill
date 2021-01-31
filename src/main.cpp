@@ -213,7 +213,9 @@ int main(int, char**)
                 t.detach();
             }
             ImGui::SameLine();
-            ImGui::Button("Play");
+            if (ImGui::Button("Play") && !dsp->isRendering) {
+                dsp->sample->play();
+            }
             ImGui::SameLine();
             ImGui::Button("Save");
 

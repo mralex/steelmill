@@ -1,12 +1,15 @@
 #pragma once
 
 #include <memory>
+
 #include "psphymod/metal_object.hpp"
 #include "psphymod/metal_object_rod.hpp"
 #include "psphymod/metal_object_pipe.hpp"
 #include "psphymod/metal_object_sheet.hpp"
 
 #include "psphymod/psmetalobj.h"
+
+#include "sample.hpp"
 
 typedef enum
 {
@@ -72,9 +75,10 @@ public:
     bool isTriggered = false;
     bool isRendering = false;
     float percentComplete = 0.f;
-    float sample = 0;
 
     float *data;
+
+    std::shared_ptr<Sample> sample = nullptr;
 
     SteelmillDSP();
 
@@ -103,7 +107,7 @@ private:
 
     size_t currentSampleIndex;
 
-    size_t doRender(int, size_t, float*);
+    size_t doRender();
 
     void setHitNode();
     void setSampleNode();

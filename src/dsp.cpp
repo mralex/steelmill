@@ -190,14 +190,14 @@ void SteelmillDSP::process(float sampleTime, float sampleRate)
     // }
 }
 
-size_t SteelmillDSP::doRender(int rate, size_t size, float *samples)
+size_t SteelmillDSP::doRender()
 {
     // Target attenuation before ending
     // TODO: Make this configurable?
     float att = -50;
 
     float stasis, damp;
-    float sample, hipass_coeff, lowpass_coeff;
+    float currentSample, hipass_coeff, lowpass_coeff;
 
     float curr_att = 0.0f;
 
@@ -212,30 +212,30 @@ size_t SteelmillDSP::doRender(int rate, size_t size, float *samples)
         metalObject->nodes[metalObject->innode]->pos.x += velocity;
     }
 
-    hipass_coeff = pow(0.5, 5.0 / rate);
-    lowpass_coeff = 1 - 20.0 / rate; /* 50 ms integrator */
-    damp = pow(0.5, 1.0 / (damping * rate));
+    hipass_coeff = pow(0.5, 5.0 / sample->sampleRate);
+    lowpass_coeff = 1 - 20.0 / sample->sampleRate; /* 50 ms integrator */
+    damp = pow(0.5, 1.0 / (damping * sample->sampleRate));
 
     float maxvol = 0.001f;
     int i;
-    for(i = 0; i < size && !metalObject->stop; i++) {
+    for(i = 0; i < sample->size && !metalObject->stop; i++) {
         metalObject->perturb(speed, damp);
 
         if (actuationType == ActuationType::ACTUATION_COMPRESSION)
-            sample = metalObject->nodes[metalObject->outnode]->pos.z - stasis;
+            currentSample = metalObject->nodes[metalObject->outnode]->pos.z - stasis;
         else
         {
-            sample = metalObject->nodes[metalObject->outnode]->pos.x - stasis;
+            currentSample = metalObject->nodes[metalObject->outnode]->pos.x - stasis;
         }
 
-        hipass = hipass_coeff * hipass + (1.0 - hipass_coeff) * sample;
-        samples[i] = sample - hipass;
+        hipass = hipass_coeff * hipass + (1.0 - hipass_coeff) * currentSample;
+        sample->raw[i] = currentSample - hipass;
 
-        if (fabs(samples[i]) > maxvol) {
-            maxvol = fabs(samples[i]);
+        if (fabs(sample->raw[i]) > maxvol) {
+            maxvol = fabs(sample->raw[i]);
         }
 
-        lowpass = lowpass_coeff * lowpass + (1.0 - lowpass_coeff) * fabs(samples[i]);
+        lowpass = lowpass_coeff * lowpass + (1.0 - lowpass_coeff) * fabs(sample->raw[i]);
 
         if (maxamp < lowpass)
             maxamp = lowpass;
@@ -253,7 +253,7 @@ size_t SteelmillDSP::doRender(int rate, size_t size, float *samples)
     int length = i;
     maxvol = 1.f / maxvol;
     for (i = 0; i < length; i++) {
-        samples[i] *= maxvol;
+        sample->raw[i] *= maxvol;
 
         // printf("%.4f\n", samples[i]);
     }
@@ -284,59 +284,55 @@ void SteelmillDSP::prepareObject() {
 }
 
 void SteelmillDSP::render(int sampleRate) {
-    int size = (int)(sampleRate * length);
-    data = (float *)malloc(sizeof(float) * size);
-    uint16_t *samples = (uint16_t *)malloc(sizeof(uint16_t) * size);
+    sample = std::make_shared<Sample>(sampleRate, (int)length);
 
-    int i;
-
-    printf("Rendering... %d...", size);
+    printf("Rendering...");
     isRendering = true;
-    size_t length = doRender(sampleRate, size, data);
+    size_t length = doRender();
+    sample->length = length;
 
-    for(i = 0; i < length; i++) {
-        int out;
+    // for(i = 0; i < length; i++) {
+    //     int out;
 
-        if (data[i] >= 1.0)
-            out = 127;
-        else if (data[i] <= -1.0)
-            out = -128;
-        else
-            out = (int)((data[i] + 1.0) * 128.0 - 128.0);
+    //     if (data[i] >= 1.0)
+    //         out = 127;
+    //     else if (data[i] <= -1.0)
+    //         out = -128;
+    //     else
+    //         out = (int)((data[i] + 1.0) * 128.0 - 128.0);
 
-        samples[i] = out;
-    }
+    //     samples[i] = out;
+    // }
 
     // for(i = 0; i < size && !metalObject->stop; i++) {
     //     data[i] = doRe(sampleRate);
     // }
-    printf("Done!\n");
+    printf("Done! %d\n", sample->length);
 
-    int result = Mix_OpenAudio(sampleRate, AUDIO_S16SYS, 2, 512);
-    if (result < 0)
-    {
-        fprintf(stderr, "Unable to open audio: %s\n", SDL_GetError());
-        exit(-1);
-    }
+    // int result = Mix_OpenAudio(sampleRate, AUDIO_S16SYS, 2, 512);
+    // if (result < 0)
+    // {
+    //     fprintf(stderr, "Unable to open audio: %s\n", SDL_GetError());
+    //     exit(-1);
+    // }
 
-    result = Mix_AllocateChannels(4);
-    if (result < 0)
-    {
-        fprintf(stderr, "Unable to allocate mixing channels: %s\n", SDL_GetError());
-        exit(-1);
-    }
+    // result = Mix_AllocateChannels(4);
+    // if (result < 0)
+    // {
+    //     fprintf(stderr, "Unable to allocate mixing channels: %s\n", SDL_GetError());
+    //     exit(-1);
+    // }
 
-    Mix_Chunk *mixSample;
-    // memset(mixSample, 0, sizeof(Mix_Chunk));
-    mixSample = Mix_QuickLoad_RAW(samples, length);
-    if (mixSample == nullptr)
-    {
-        fprintf(stderr, "Unable to load raw data: %s\n", SDL_GetError());
-        exit(-1);
-    }
+    // Mix_Chunk *mixSample;
+    // // memset(mixSample, 0, sizeof(Mix_Chunk));
+    // mixSample = Mix_QuickLoad_RAW(samples, length);
+    // if (mixSample == nullptr)
+    // {
+    //     fprintf(stderr, "Unable to load raw data: %s\n", SDL_GetError());
+    //     exit(-1);
+    // }
 
-    Mix_PlayChannel(-1, mixSample, 0);
+    // Mix_PlayChannel(-1, mixSample, 0);
     // Mix_FreeChunk(mixSample);
-
     isRendering = false;
 }
