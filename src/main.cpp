@@ -219,11 +219,15 @@ int main(int, char**)
             ImGui::SameLine();
             ImGui::Button("Save");
 
-            if (dsp->isRendering) {
-                ImGui::Text("Rendering...");
-            }
-
             ImGui::End();
+
+            if (dsp->isRendering) {
+                if (ImGui::BeginPopupModal("rendering", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar)) {
+                    ImGui::Text("Rendering...");
+                    ImGui::EndPopup();
+                }
+                ImGui::OpenPopup("rendering");   
+            }
         }
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         // if (show_demo_window)
