@@ -262,6 +262,10 @@ size_t SteelmillDSP::doRender()
 }
 
 void SteelmillDSP::prepareObject() {
+    if (sample) {
+        sample->stop();
+    }
+
     printf("Prepating object\n");
     switch (obj_type)
     {

@@ -48,29 +48,29 @@ void Sample::play()
 
     if (!audioInitialized) {
 
-        int i, audioDeviceCount = SDL_GetNumAudioDevices(0);
-        for (i = 0; i < audioDeviceCount; ++i)
-        {
-            printf("Audio device %d: %s\n", i, SDL_GetAudioDeviceName(i, 0));
-        }
+        // int i, audioDeviceCount = SDL_GetNumAudioDevices(0);
+        // for (i = 0; i < audioDeviceCount; ++i)
+        // {
+        //     printf("Audio device %d: %s\n", i, SDL_GetAudioDeviceName(i, 0));
+        // }
 
         SDL_AudioSpec have;
         SDL_AudioSpec spec = {0};
         spec.freq = sampleRate;
         spec.format = AUDIO_F32;
         spec.channels = 1;
-        spec.samples = 1024;
+        spec.samples = 512;
         spec.callback = SDLAudioCallback;
         spec.userdata = this;
 
-        const unsigned int deviceIndex = 3;
-        const char* deviceName = SDL_GetAudioDeviceName(deviceIndex, 0);
-        if (deviceName == nullptr) {
-            printf("Failed to find audio device: %s", SDL_GetError());
-            return;
-        }
-        printf("Device: %s\n", deviceName);
-        audioDevice = SDL_OpenAudioDevice(deviceName, 0, &spec, &have, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
+        // const unsigned int deviceIndex = 0;
+        // const char* deviceName = SDL_GetAudioDeviceName(deviceIndex, 0);
+        // if (deviceName == nullptr) {
+        //     printf("Failed to find audio device: %s", SDL_GetError());
+        //     return;
+        // }
+        // printf("Device: %s\n", deviceName);
+        audioDevice = SDL_OpenAudioDevice(NULL, 0, &spec, &have, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
         if (audioDevice == 0)
         {
             printf("Failed to open audio: %s\n", SDL_GetError());
@@ -88,6 +88,14 @@ void Sample::play()
     SDL_PauseAudioDevice(audioDevice, 0);
 
     // SDL_CloseAudioDevice(device);
+}
+
+void Sample::stop() {
+    if (!audioInitialized) {
+        return;
+    }
+
+    SDL_PauseAudioDevice(audioDevice, 1);
 }
 
 void Sample::SDLAudioCallback(void *data, Uint8 *buffer, int length) {

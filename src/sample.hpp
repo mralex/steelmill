@@ -31,6 +31,7 @@ public:
     int playbackPosition;
     
     void play();
+    void stop();
 
 private:
     float audioInitialized = false;
